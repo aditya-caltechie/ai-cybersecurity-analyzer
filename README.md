@@ -97,7 +97,7 @@ Open [http://localhost:8000](http://localhost:8000).
 
 ## Cloud deploy
 
-Terraform stacks live under `terraform/azure` and `terraform/gcp`. Full step-by-step guides (including Azure provider registration and Windows PowerShell) are in [`.week3/day1.part2.md`](.week3/day1.part2.md) (Azure) and the GCP week materials.
+Terraform stacks live under `terraform/azure` and `terraform/gcp`. Full step-by-step guides (including Azure provider registration and Windows PowerShell) are in [`docs/workshop/week3/day1.part2.md`](docs/workshop/week3/day1.part2.md) (Azure) and [`docs/workshop/week3/day2.part2.md`](docs/workshop/week3/day2.part2.md) (GCP). For a consolidated list of **Azure resources** used by this project, see [`docs/azure.md`](docs/azure.md).
 
 ### Azure (Container Apps)
 
@@ -156,7 +156,7 @@ terraform apply \
   -var="docker_image_tag=v2"
 ```
 
-…or **`terraform taint`** the Docker image resources as described in [`.week3/day1.part2.md`](.week3/day1.part2.md), then run `terraform apply` again with the same `-var` arguments as above.
+…or **`terraform taint`** the Docker image resources as described in [`docs/workshop/week3/day1.part2.md`](docs/workshop/week3/day1.part2.md), then run `terraform apply` again with the same `-var` arguments as above.
 
 #### Clean up (important for cost)
 
