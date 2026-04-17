@@ -97,4 +97,79 @@ Open [http://localhost:8000](http://localhost:8000).
 
 ## Cloud deploy
 
-Use the Terraform stacks under `terraform/azure` and `terraform/gcp` after configuring the respective provider credentials and variables for your subscription/project.
+Terraform stacks live under `terraform/azure` and `terraform/gcp`. Full step-by-step guides (including Azure provider registration and Windows PowerShell) are in [`.week3/day1.part2.md`](.week3/day1.part2.md) (Azure) and the GCP week materials.
+
+### Azure (Container Apps)
+
+From the **repo root**, load API keys into your shell (macOS / Linux):
+
+```bash
+export $(grep -v '^#' .env | xargs)
+```
+
+**1. Initialize Terraform and use the Azure workspace** (first time, from `terraform/azure`):
+
+```bash
+cd terraform/azure
+terraform init
+
+terraform workspace new azure   # only if workspace does not exist yet
+terraform workspace select azure
+terraform workspace show        # should print: azure
+```
+
+**2. Log in to Azure** (browser flow):
+
+```bash
+az login
+az account show
+```
+
+Register **Microsoft.App** and **Microsoft.OperationalInsights** once per subscription if you have not already (see the Week 3 guide). Wait until both show `Registered` before applying.
+
+**3. Plan and deploy** (still in `terraform/azure`):
+
+```bash
+terraform plan \
+  -var="openai_api_key=$OPENAI_API_KEY" \
+  -var="semgrep_app_token=$SEMGREP_APP_TOKEN"
+
+terraform apply \
+  -var="openai_api_key=$OPENAI_API_KEY" \
+  -var="semgrep_app_token=$SEMGREP_APP_TOKEN"
+```
+
+**4. Open the app** (HTTPS URL from Terraform):
+
+```bash
+terraform output app_url
+```
+
+#### Rebuild and redeploy
+
+Terraform may not rebuild the image when only application code changes. Either **bump the image tag** and apply again:
+
+```bash
+terraform apply \
+  -var="openai_api_key=$OPENAI_API_KEY" \
+  -var="semgrep_app_token=$SEMGREP_APP_TOKEN" \
+  -var="docker_image_tag=v2"
+```
+
+…or **`terraform taint`** the Docker image resources as described in [`.week3/day1.part2.md`](.week3/day1.part2.md), then run `terraform apply` again with the same `-var` arguments as above.
+
+#### Clean up (important for cost)
+
+When you are finished with the lab, destroy everything Terraform created (from `terraform/azure`):
+
+```bash
+terraform destroy \
+  -var="openai_api_key=$OPENAI_API_KEY" \
+  -var="semgrep_app_token=$SEMGREP_APP_TOKEN"
+```
+
+Confirm with `yes` when prompted. You can keep an empty resource group in Azure at no charge, or delete it with `az group delete` if you no longer need it.
+
+### GCP
+
+Use `terraform/gcp` with your GCP credentials and variables; see the course GCP deploy notes when you reach that module.
