@@ -13,35 +13,35 @@ You run the **Cybersecurity Analyzer**: a **Next.js** frontend and **FastAPI** b
 ## High-Level Architecture (ASCII)
 
 ```
-                                    WEEK 3 DAY 1 — END-TO-END
+                                    END-TO-END
   ═══════════════════════════════════════════════════════════════════════════════════
 
   [ Student machine ]                    [ Microsoft Azure — same region as RG ]
-  ┌─────────────────────┐              ┌────────────────────────────────────────────┐
+  ┌─────────────────────┐              ┌────────────────────────────────────────-────┐
   │ Cursor / terminal   │              │ Subscription                                │
   │                     │              │   └── Resource Group: cyber-analyzer-rg     │
   │ .env (not in git)   │              │         ┌──────────────────────────────────┐│
-  │ OPENAI_API_KEY      │──Terraform──▶│ ACR   │ Azure Container Registry         ││
-  │ SEMGREP_APP_TOKEN   │   variables  │       │ (stores cyber-analyzer image)    ││
-  │                     │              │       └──────────────▲─────────────────────┘│
-  │ Docker (local build)│──build/push──┼──────────────────────┘                       │
+  │ OPENAI_API_KEY      │──Terraform──▶│ ACR     │ Azure Container Registry         ││
+  │ SEMGREP_APP_TOKEN   │   variables  │         │ (stores cyber-analyzer image)    ││
+  │                     │              │         └──────────────▲───────────────────┘│
+  │ Docker (local build)│──build/push──┼──────────────────--────┘                    │
   └──────────┬──────────┘              │         ┌──────────────────────────────────┐│
              │                         │         │ Log Analytics workspace          ││
              │                         │         │ (logs / metrics ingestion)       ││
-             │                         │         └──────────────▲─────────────────────┘│
-             │                         │                        │                       │
-             │                         │         ┌──────────────┴──────────────────────┐│
-             │                         │         │ Container Apps Environment          ││
-             │                         │         │  + scaling / networking glue      ││
-             │                         │         └──────────────▲──────────────────────┘│
-             │                         │                        │                       │
-             │                         │         ┌──────────────┴──────────────────────┐│
-             │                         │         │ Container App: cyber-analyzer       ││
-             │                         │         │  Image from ACR                     ││
-             │                         │         │  CPU ~1 vCPU, RAM ~2 GiB (Semgrep)  ││
-             │                         │         │  min replicas: 0 (scale to zero)    ││
-             │                         │         └──────────────▲──────────────────────┘│
-             │                         └────────────────────────┼────────────────────────┘
+             │                         │         └──────────────▲───────────────────┘│
+             │                         │                        │                    │
+             │                         │         ┌──────────────┴───────────────────┐│
+             │                         │         │ Container Apps Environment       ││
+             │                         │         │  + scaling / networking glue     ││
+             │                         │         └──────────────▲───────────────────┘│
+             │                         │                        │                    │
+             │                         │         ┌──────────────┴───────────────────┐│
+             │                         │         │ Container App: cyber-analyzer    ││
+             │                         │         │  Image from ACR                  ││
+             │                         │         │ CPU ~1 vCPU, RAM ~2 GiB (Semgrep)││
+             │                         │         │  min replicas: 0 (scale to zero) ││
+             │                         │         └──────────────▲───────────────────┘│
+             │                         └────────────────────────┼────────────────────┘
              │                                                    │
              │                         HTTPS (public FQDN)        │
              └────────────────────────── Browser ─────────────────┘
