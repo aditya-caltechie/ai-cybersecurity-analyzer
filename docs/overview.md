@@ -1,4 +1,4 @@
-# Week 3 Day 1: What You Are Building 
+# What You Are Building 
 
 This document summarizes the Week 3 Day 1 guides (Parts 0, 1, and 2): local app behavior, Azure account prep, and Terraform deployment to **Azure Container Apps**. It includes a high-level ASCII architecture diagram and a concise **Azure vs AWS** comparison.
 
