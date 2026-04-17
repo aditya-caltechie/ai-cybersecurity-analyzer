@@ -2,7 +2,7 @@
 
 Web app that analyzes Python code for security issues using **Semgrep** (static analysis) and an **OpenAI Agents** workflow with the **Semgrep MCP** server. Includes **Terraform** configs for **Azure Container Apps** and **GCP Cloud Run**.
 
-![Course image](assets/cyber.png)
+![Course image](docs/assets/cyber.png)
 
 ## Architecture (high level)
 
