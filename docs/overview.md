@@ -1,4 +1,4 @@
-# Week 3 Day 1: What You Are Building (Parts 0–2)
+# Week 3 Day 1: What You Are Building 
 
 This document summarizes the Week 3 Day 1 guides (Parts 0, 1, and 2): local app behavior, Azure account prep, and Terraform deployment to **Azure Container Apps**. It includes a high-level ASCII architecture diagram and a concise **Azure vs AWS** comparison.
 
@@ -16,7 +16,7 @@ You run the **Cybersecurity Analyzer**: a **Next.js** frontend and **FastAPI** b
                                     END-TO-END
   ═══════════════════════════════════════════════════════════════════════════════════
 
-  [ Student machine ]                    [ Microsoft Azure — same region as RG ]
+  [ Aditya's machine ]                    [ Microsoft Azure — same region as RG ]
   ┌─────────────────────┐              ┌────────────────────────────────────────-────┐
   │ Cursor / terminal   │              │ Subscription                                │
   │                     │              │   └── Resource Group: cyber-analyzer-rg     │
@@ -46,6 +46,8 @@ You run the **Cybersecurity Analyzer**: a **Next.js** frontend and **FastAPI** b
              │                         HTTPS (public FQDN)        │
              └────────────────────────── Browser ─────────────────┘
 
+  
+  
   Inside the container (single process on port 8000):
   ┌──────────────────────────────────────────────────────────────────────────────┐
   │  FastAPI (API + static Next.js export)                                       │
