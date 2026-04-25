@@ -1,4 +1,4 @@
-# Cybersecurity Analyzer
+# AI Cybersecurity Analyzer 🛡️ 
 
 Web app that analyzes Python code for security issues using **Semgrep** (static analysis) and an **OpenAI Agents** workflow with the **Semgrep MCP** server. Includes **Terraform** configs for **Azure Container Apps**, **GCP Cloud Run**, and **AWS App Runner** (ECR).
 
