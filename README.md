@@ -1,6 +1,10 @@
 # AI Cybersecurity Analyzer 🛡️ 
 
-Web app that analyzes Python code for security issues using **Semgrep** (static analysis) and an **OpenAI Agents** workflow with the **Semgrep MCP** server. Includes **Terraform** configs for **Azure Container Apps**, **GCP Cloud Run**, and **AWS App Runner** (ECR).
+Web app that analyzes Python code for security issues using **Semgrep** (static analysis) and an **OpenAI Agents** workflow with the **Semgrep MCP** server.
+
+**Recommended deployment path (this repo): AWS App Runner + ECR** using the scripts in `scripts/`.
+
+Azure and GCP Terraform stacks are included as optional later paths.
 
 ![Course image](docs/assets/cyber.png)
 
@@ -29,7 +33,7 @@ In **production Docker**, the built Next.js app is served as static files from t
 
 - Upload or paste Python; get Semgrep-backed findings plus AI-assisted context
 - Single **Docker** image: Next.js static export served by **FastAPI** on port `8000`
-- **Multi-cloud**: deploy with `terraform/azure`, `terraform/gcp`, or `terraform/aws`
+- **Cloud deploy**: primarily `terraform/aws` (AWS App Runner + ECR); Azure/GCP optional
 
 ## Stack
 
@@ -98,7 +102,71 @@ Open [http://localhost:8000](http://localhost:8000).
 
 ## Cloud deploy
 
-Terraform stacks live under `terraform/azure`, `terraform/gcp`, and `terraform/aws`. Workshop guides: [`docs/workshop/week3/day1.part2.md`](docs/workshop/week3/day1.part2.md) (Azure), [`docs/workshop/week3/day2.part2.md`](docs/workshop/week3/day2.part2.md) (GCP). **Azure resource list:** [`docs/azure.md`](docs/azure.md). **AWS deploy guide:** [`docs/aws.md`](docs/aws.md).
+Terraform stacks live under `terraform/aws`, `terraform/azure`, and `terraform/gcp`.
+
+For now, this repo’s **primary** supported cloud deployment is **AWS App Runner + ECR**:
+- **AWS deploy guide:** [`docs/aws.md`](docs/aws.md)
+- **Terraform summary:** [`terraform/README.md`](terraform/README.md)
+
+Azure and GCP are included as optional later paths:
+- Azure workshop guide: [`docs/workshop/week3/day1.part2.md`](docs/workshop/week3/day1.part2.md)
+- GCP workshop guide: [`docs/workshop/week3/day2.part2.md`](docs/workshop/week3/day2.part2.md)
+- Azure resource list: [`docs/azure.md`](docs/azure.md)
+
+### AWS deployment (recommended)
+
+#### High-level AWS architecture (ASCII)
+
+```text
+Developer machine (Terraform + Docker)
+  |
+  |  docker build (linux/amd64) + docker push
+  v
+Amazon ECR (private repo: cyber-analyzer)
+  |
+  |  image pull on deploy / resume
+  v
+AWS App Runner service (public HTTPS)
+  - runs container on port 8000 (FastAPI + static Next.js)
+  - env vars: OPENAI_API_KEY, SEMGREP_APP_TOKEN
+  - health check: /health
+```
+
+#### Deploy with scripts (recommended)
+
+From the repo root:
+
+```bash
+aws sts get-caller-identity
+docker ps
+./scripts/deploy-aws.sh
+```
+
+It prints the **Service URL** at the end.
+
+#### Pause instead of deleting (recommended)
+
+Because of AWS App Runner availability changes for new customers after Apr 30, 2026, this repo’s default cleanup action is to **pause** the service (compute to zero) so it can be resumed later:
+
+```bash
+./scripts/destroy-aws.sh
+```
+
+Resume later:
+
+```bash
+aws apprunner resume-service --service-arn "$(cd terraform/aws && terraform output -raw apprunner_service_arn)"
+```
+
+#### Validate deploy / cleanup
+
+```bash
+./scripts/check-aws-deploy.sh
+./scripts/check-aws-cleanup.sh          # paused-only (default)
+./scripts/check-aws-cleanup.sh destroyed
+```
+
+---
 
 ### Azure (Container Apps)
 
@@ -170,49 +238,6 @@ terraform destroy \
 ```
 
 Confirm with `yes` when prompted. You can keep an empty resource group in Azure at no charge, or delete it with `az group delete` if you no longer need it.
-
-### AWS (App Runner + ECR)
-
-Uses **Amazon ECR** for the image and **AWS App Runner** to run the same single container (port `8000`, **1 vCPU / 2 GiB**). Prerequisites: [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) configured (`aws sts get-caller-identity`), **Docker** running, and `.env` loaded.
-
-**1. Initialize and workspace** (first time):
-
-```bash
-cd terraform/aws
-terraform init
-
-terraform workspace new aws    # only once
-terraform workspace select aws
-```
-
-**2. Deploy** (from repo root):
-
-```bash
-export $(grep -v '^#' .env | xargs)
-cd terraform/aws
-
-terraform apply \
-  -var="openai_api_key=$OPENAI_API_KEY" \
-  -var="semgrep_app_token=$SEMGREP_APP_TOKEN"
-```
-
-**3. URL:**
-
-```bash
-terraform output -raw service_url
-```
-
-**Rebuild** (same pattern as other clouds): bump `-var="docker_image_tag=v2"` or `terraform taint docker_image.app` and `docker_registry_image.app`, then `terraform apply` again.
-
-**Clean up:**
-
-```bash
-terraform destroy \
-  -var="openai_api_key=$OPENAI_API_KEY" \
-  -var="semgrep_app_token=$SEMGREP_APP_TOKEN"
-```
-
-Helper scripts from repo root: [`scripts/deploy-aws.sh`](scripts/deploy-aws.sh) and [`scripts/destroy-aws.sh`](scripts/destroy-aws.sh).
 
 ### GCP
 
