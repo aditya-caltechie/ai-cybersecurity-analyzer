@@ -129,13 +129,16 @@ terraform state rm docker_image.app
 
 ## Rebuild after code changes
 
-Same caveat as Azure/GCP: the Docker provider may not notice source changes. Either bump **`docker_image_tag`** and apply, or:
+Same caveat as Azure/GCP: the **`null_resource.build_and_push`** triggers use the **Dockerfile hash** and image tag—changing app source **without** changing the Dockerfile may **not** rebuild. Either bump **`docker_image_tag`** and apply, or force the local-exec step:
 
 ```bash
-terraform taint docker_image.app
-terraform taint docker_registry_image.app
+cd terraform/aws
+terraform workspace select aws
+terraform taint null_resource.build_and_push
 terraform apply -var="openai_api_key=$OPENAI_API_KEY" -var="semgrep_app_token=$SEMGREP_APP_TOKEN"
 ```
+
+Or run `./scripts/deploy-aws.sh` after the taint.
 
 ---
 
@@ -196,6 +199,7 @@ aws apprunner resume-service --service-arn "$(cd terraform/aws && terraform outp
 
 | Path | Purpose |
 |------|---------|
+| [`docs/aws-terraform-infra.md`](aws-terraform-infra.md) | **Deep dive:** services in `main.tf`, file roles, dependencies, ASCII diagrams |
 | [`terraform/aws/`](../terraform/aws/) | `main.tf`, `variables.tf`, `outputs.tf`, `versions.tf` |
 | [`scripts/deploy-aws.sh`](../scripts/deploy-aws.sh) | Init, `aws` workspace, plan, apply |
 | [`scripts/destroy-aws.sh`](../scripts/destroy-aws.sh) | `terraform destroy` |
