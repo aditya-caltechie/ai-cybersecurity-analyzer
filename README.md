@@ -1,6 +1,6 @@
 # Cybersecurity Analyzer
 
-Web app that analyzes Python code for security issues using **Semgrep** (static analysis) and an **OpenAI Agents** workflow with the **Semgrep MCP** server. Includes **Terraform** configs for **Azure Container Apps** and **GCP Cloud Run**.
+Web app that analyzes Python code for security issues using **Semgrep** (static analysis) and an **OpenAI Agents** workflow with the **Semgrep MCP** server. Includes **Terraform** configs for **Azure Container Apps**, **GCP Cloud Run**, and **AWS App Runner** (ECR).
 
 ![Course image](docs/assets/cyber.png)
 
@@ -29,7 +29,7 @@ In **production Docker**, the built Next.js app is served as static files from t
 
 - Upload or paste Python; get Semgrep-backed findings plus AI-assisted context
 - Single **Docker** image: Next.js static export served by **FastAPI** on port `8000`
-- **Multi-cloud**: deploy with `terraform/azure` and `terraform/gcp`
+- **Multi-cloud**: deploy with `terraform/azure`, `terraform/gcp`, or `terraform/aws`
 
 ## Stack
 
@@ -38,7 +38,7 @@ In **production Docker**, the built Next.js app is served as static files from t
 | Frontend     | Next.js (TypeScript), Tailwind |
 | Backend      | Python 3.12, FastAPI, uv       |
 | Analysis     | Semgrep, MCP, OpenAI Agents    |
-| Infra        | Terraform (Azure, GCP)         |
+| Infra        | Terraform (Azure, GCP, AWS)      |
 
 ## Prerequisites
 
@@ -90,14 +90,15 @@ Open [http://localhost:8000](http://localhost:8000).
 ```
 ├── backend/     # FastAPI app, MCP / agent wiring
 ├── frontend/    # Next.js UI (static export in production)
-├── terraform/   # azure/, gcp/ — infra as code
+├── terraform/   # azure/, gcp/, aws/ — infra as code
+├── scripts/     # deploy-aws.sh, destroy-aws.sh
 ├── Dockerfile   # Single-container production build
-└── assets/      # Images, etc.
+└── docs/        # workshop notes, aws.md, azure.md, …
 ```
 
 ## Cloud deploy
 
-Terraform stacks live under `terraform/azure` and `terraform/gcp`. Full step-by-step guides (including Azure provider registration and Windows PowerShell) are in [`docs/workshop/week3/day1.part2.md`](docs/workshop/week3/day1.part2.md) (Azure) and [`docs/workshop/week3/day2.part2.md`](docs/workshop/week3/day2.part2.md) (GCP). For a consolidated list of **Azure resources** used by this project, see [`docs/azure.md`](docs/azure.md).
+Terraform stacks live under `terraform/azure`, `terraform/gcp`, and `terraform/aws`. Workshop guides: [`docs/workshop/week3/day1.part2.md`](docs/workshop/week3/day1.part2.md) (Azure), [`docs/workshop/week3/day2.part2.md`](docs/workshop/week3/day2.part2.md) (GCP). **Azure resource list:** [`docs/azure.md`](docs/azure.md). **AWS deploy guide:** [`docs/aws.md`](docs/aws.md).
 
 ### Azure (Container Apps)
 
@@ -170,6 +171,49 @@ terraform destroy \
 
 Confirm with `yes` when prompted. You can keep an empty resource group in Azure at no charge, or delete it with `az group delete` if you no longer need it.
 
+### AWS (App Runner + ECR)
+
+Uses **Amazon ECR** for the image and **AWS App Runner** to run the same single container (port `8000`, **1 vCPU / 2 GiB**). Prerequisites: [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) configured (`aws sts get-caller-identity`), **Docker** running, and `.env` loaded.
+
+**1. Initialize and workspace** (first time):
+
+```bash
+cd terraform/aws
+terraform init
+
+terraform workspace new aws    # only once
+terraform workspace select aws
+```
+
+**2. Deploy** (from repo root):
+
+```bash
+export $(grep -v '^#' .env | xargs)
+cd terraform/aws
+
+terraform apply \
+  -var="openai_api_key=$OPENAI_API_KEY" \
+  -var="semgrep_app_token=$SEMGREP_APP_TOKEN"
+```
+
+**3. URL:**
+
+```bash
+terraform output -raw service_url
+```
+
+**Rebuild** (same pattern as other clouds): bump `-var="docker_image_tag=v2"` or `terraform taint docker_image.app` and `docker_registry_image.app`, then `terraform apply` again.
+
+**Clean up:**
+
+```bash
+terraform destroy \
+  -var="openai_api_key=$OPENAI_API_KEY" \
+  -var="semgrep_app_token=$SEMGREP_APP_TOKEN"
+```
+
+Helper scripts from repo root: [`scripts/deploy-aws.sh`](scripts/deploy-aws.sh) and [`scripts/destroy-aws.sh`](scripts/destroy-aws.sh).
+
 ### GCP
 
-Use `terraform/gcp` with your GCP credentials and variables; see the course GCP deploy notes when you reach that module.
+Use `terraform/gcp` with your GCP credentials and variables; see [`docs/workshop/week3/day2.part2.md`](docs/workshop/week3/day2.part2.md).

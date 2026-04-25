@@ -173,6 +173,7 @@ Terraform: `terraform plan` / `terraform apply` / `terraform destroy` from **`te
 | [docs/overview.md](./overview.md) | High-level architecture and Azure vs AWS comparison |
 | [docs/demo.md](./demo.md) | Demo narrative and portal screenshots |
 | [README.md](../README.md) | Quick Terraform commands for Azure |
+| [docs/aws.md](./aws.md) | Same app on **AWS App Runner** + **ECR** |
 
 ---
 

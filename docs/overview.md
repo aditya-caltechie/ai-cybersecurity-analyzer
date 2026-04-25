@@ -120,6 +120,7 @@ You run the **Cybersecurity Analyzer**: a **Next.js** frontend and **FastAPI** b
 
 ## Source Material
 
-- `.week3/day1.part0.md` — local setup, Semgrep token, Docker
-- `.week3/day1.part1.md` — Azure account, RG, budget, CLI
-- `.week3/day1.part2.md` — Terraform deploy, providers, outputs, destroy
+- [`docs/workshop/week3/day1.part0.md`](./workshop/week3/day1.part0.md) — local setup, Semgrep token, Docker
+- [`docs/workshop/week3/day1.part1.md`](./workshop/week3/day1.part1.md) — Azure account, RG, budget, CLI
+- [`docs/workshop/week3/day1.part2.md`](./workshop/week3/day1.part2.md) — Azure Terraform deploy, providers, outputs, destroy
+- [`docs/aws.md`](./aws.md) — AWS App Runner + ECR deploy for this repo
