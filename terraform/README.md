@@ -26,6 +26,61 @@ export $(grep -v '^#' .env | xargs)
 
 ---
 
+## AWS (App Runner + ECR) — `terraform/aws`
+
+### What gets created
+
+- **Amazon ECR repository** (stores the image)
+- **IAM role** that App Runner assumes to pull from ECR
+- **App Runner service** (public HTTPS, container port `8000`, **1 vCPU / 2 GiB**)
+
+> Note: the Terraform AWS provider requires App Runner `min_size >= 1`, so this stack does **not** scale to zero.
+
+### Commands
+
+```bash
+cd terraform/aws
+terraform init
+
+terraform workspace new aws   # only once
+terraform workspace select aws
+
+terraform apply \
+  -var="openai_api_key=$OPENAI_API_KEY" \
+  -var="semgrep_app_token=$SEMGREP_APP_TOKEN"
+
+terraform output -raw service_url
+```
+
+### Helper scripts (repo root)
+
+```bash
+./scripts/deploy-aws.sh
+./scripts/destroy-aws.sh
+```
+
+### Pause / resume (recommended)
+
+`./scripts/destroy-aws.sh` **pauses** App Runner by default (compute to zero) and keeps the service so you can resume later.
+
+Resume later:
+
+```bash
+aws apprunner resume-service --service-arn "$(cd terraform/aws && terraform output -raw apprunner_service_arn)"
+```
+
+### Cleanup
+
+```bash
+terraform destroy \
+  -var="openai_api_key=$OPENAI_API_KEY" \
+  -var="semgrep_app_token=$SEMGREP_APP_TOKEN"
+```
+
+Docs: `docs/aws.md`.
+
+---
+
 ## Azure (Container Apps) — `terraform/azure`
 
 ### What gets created
@@ -125,49 +180,4 @@ terraform destroy \
 ```
 
 Docs: `docs/workshop/week3/day2.part2.md`.
-
----
-
-## AWS (App Runner + ECR) — `terraform/aws`
-
-### What gets created
-
-- **Amazon ECR repository** (stores the image)
-- **IAM role** that App Runner assumes to pull from ECR
-- **App Runner service** (public HTTPS, container port `8000`, **1 vCPU / 2 GiB**)
-
-> Note: the Terraform AWS provider requires App Runner `min_size >= 1`, so this stack does **not** scale to zero.
-
-### Commands
-
-```bash
-cd terraform/aws
-terraform init
-
-terraform workspace new aws   # only once
-terraform workspace select aws
-
-terraform apply \
-  -var="openai_api_key=$OPENAI_API_KEY" \
-  -var="semgrep_app_token=$SEMGREP_APP_TOKEN"
-
-terraform output -raw service_url
-```
-
-### Helper scripts (repo root)
-
-```bash
-./scripts/deploy-aws.sh
-./scripts/destroy-aws.sh
-```
-
-### Cleanup
-
-```bash
-terraform destroy \
-  -var="openai_api_key=$OPENAI_API_KEY" \
-  -var="semgrep_app_token=$SEMGREP_APP_TOKEN"
-```
-
-Docs: `docs/aws.md`.
 

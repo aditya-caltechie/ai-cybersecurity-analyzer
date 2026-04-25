@@ -141,6 +141,8 @@ terraform apply -var="openai_api_key=$OPENAI_API_KEY" -var="semgrep_app_token=$S
 
 ## Destroy (stop charges)
 
+> **Important note (App Runner availability change)**: AWS App Runner is no longer open to new customers starting **Mar 31, 2026**, and becomes unavailable to **new** customers starting **Apr 30, 2026** (moves to maintenance). Existing customers can continue to use the service. Because of this, the default “cleanup” flow in this repo **pauses** the App Runner service instead of deleting it. See AWS docs: [`manage-pause`](https://docs.aws.amazon.com/apprunner/latest/dg/manage-pause.html) and [`PauseService`](https://docs.aws.amazon.com/apprunner/latest/api/API_PauseService.html).
+
 ```bash
 export $(grep -v '^#' .env | xargs)
 cd terraform/aws
@@ -155,6 +157,26 @@ Or:
 
 ```bash
 ./scripts/destroy-aws.sh
+```
+
+### Pause instead of deleting (recommended)
+
+Pausing reduces compute to zero but keeps the App Runner service + domain, so you can resume later without recreating it:
+
+```bash
+./scripts/destroy-aws.sh
+```
+
+To resume:
+
+```bash
+aws apprunner resume-service --service-arn "$(cd terraform/aws && terraform output -raw apprunner_service_arn)"
+```
+
+### If you really want to delete everything
+
+```bash
+./scripts/destroy-aws.sh destroy
 ```
 
 ---
@@ -177,4 +199,6 @@ Or:
 | [`terraform/aws/`](../terraform/aws/) | `main.tf`, `variables.tf`, `outputs.tf`, `versions.tf` |
 | [`scripts/deploy-aws.sh`](../scripts/deploy-aws.sh) | Init, `aws` workspace, plan, apply |
 | [`scripts/destroy-aws.sh`](../scripts/destroy-aws.sh) | `terraform destroy` |
+| [`scripts/check-aws-deploy.sh`](../scripts/check-aws-deploy.sh) | Verify App Runner + ECR are healthy |
+| [`scripts/check-aws-cleanup.sh`](../scripts/check-aws-cleanup.sh) | Verify pause-only vs full destroy cleanup |
 | [`README.md`](../README.md) | Short AWS snippet next to Azure/GCP |

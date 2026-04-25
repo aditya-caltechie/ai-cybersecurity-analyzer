@@ -15,6 +15,8 @@ locals {
 resource "aws_ecr_repository" "app" {
   name                 = var.service_name
   image_tag_mutability = "MUTABLE"
+  # Allows `terraform destroy` to delete the repository even if images remain.
+  force_delete = true
 
   image_scanning_configuration {
     scan_on_push = true

@@ -17,3 +17,8 @@ output "ecr_repository_name" {
   value       = aws_ecr_repository.app.name
   description = "ECR repository name"
 }
+
+output "aws_region" {
+  value       = var.aws_region
+  description = "AWS region used by this Terraform stack"
+}

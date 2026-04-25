@@ -31,6 +31,48 @@ if ! terraform workspace select aws >/dev/null 2>&1; then
   terraform workspace select aws >/dev/null
 fi
 
+# If App Runner is already deployed and PAUSED, resume it instead of attempting a fresh deploy.
+# This matters because App Runner availability changes mean you may want to preserve existing
+# services and domains and just resume them later.
+SERVICE_ARN="$(terraform output -raw apprunner_service_arn 2>/dev/null || true)"
+AWS_REGION="$(terraform output -raw aws_region 2>/dev/null || true)"
+SERVICE_URL="$(terraform output -raw service_url 2>/dev/null || true)"
+
+if [[ -n "${SERVICE_ARN}" ]]; then
+  STATUS=""
+  if [[ -n "${AWS_REGION}" ]]; then
+    STATUS="$(aws apprunner describe-service --region "${AWS_REGION}" --service-arn "${SERVICE_ARN}" --query 'Service.Status' --output text 2>/dev/null || true)"
+  else
+    STATUS="$(aws apprunner describe-service --service-arn "${SERVICE_ARN}" --query 'Service.Status' --output text 2>/dev/null || true)"
+  fi
+
+  if [[ "${STATUS}" == "PAUSED" ]]; then
+    echo "App Runner service is PAUSED; resuming instead of deploying a new service."
+    if [[ -n "${AWS_REGION}" ]]; then
+      aws apprunner resume-service --region "${AWS_REGION}" --service-arn "${SERVICE_ARN}" >/dev/null
+    else
+      aws apprunner resume-service --service-arn "${SERVICE_ARN}" >/dev/null
+    fi
+
+    echo "Resume requested. Status will transition via OPERATION_IN_PROGRESS."
+    echo
+    echo "Service URL:"
+    if [[ -n "${SERVICE_URL}" ]]; then
+      echo "${SERVICE_URL}"
+    else
+      terraform output -raw service_url
+    fi
+    echo
+
+    END_EPOCH="$(date +%s)"
+    END_HUMAN="$(date)"
+    ELAPSED="$((END_EPOCH - START_EPOCH))"
+    echo "AWS deploy end:   ${END_HUMAN}"
+    echo "AWS deploy time:  ${ELAPSED}s"
+    exit 0
+  fi
+fi
+
 terraform plan \
   -var="openai_api_key=${OPENAI_API_KEY}" \
   -var="semgrep_app_token=${SEMGREP_APP_TOKEN}" \
