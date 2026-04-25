@@ -113,18 +113,39 @@ For now, this repo’s **primary** supported cloud deployment is **AWS App Runne
 #### High-level AWS architecture (ASCII)
 
 ```text
-Developer machine (Terraform + Docker)
-  |
-  |  docker build (linux/amd64) + docker push
-  v
-Amazon ECR (private repo: cyber-analyzer)
-  |
-  |  image pull on deploy / resume
-  v
-AWS App Runner service (public HTTPS)
-  - runs container on port 8000 (FastAPI + static Next.js)
-  - env vars: OPENAI_API_KEY, SEMGREP_APP_TOKEN
-  - health check: /health
++---------------------------+         +---------------------------+
+|  Your laptop              |         |  AWS (same region)        |
+|  Terraform + Docker CLI   |         |                           |
++---------------------------+         |                           |
+            |                         |                           |
+            | 1) terraform apply      |                           |
+            |    (creates ECR, IAM,   |                           |
+            |     App Runner, etc.)   |                           |
+            v                         |                           |
++---------------------------+         |  +---------------------+  |
+|  Docker build + push      |         |  | Amazon ECR          |  |
+|  linux/amd64 image        +-------->|  | repo: cyber-analyzer|  |
+|  tag: latest (default)    |         |  +----------+----------+  |
++---------------------------+         |             |             |
+                                      |             | 2) pull     |
+                                      |             v             |
+                                      |  +----------+----------+  |
+                                      |  | AWS App Runner      |  |
+                                      |  | HTTPS (public)      |  |
+                                      |  | container :8000     |  |
+                                      |  | /health             |  |
+                                      |  | env: OPENAI_* ,     |  |
+                                      |  |      SEMGREP_*      |  |
+                                      |  +----------+----------+  |
+                                      |             |             |
+                                      +-------------+-------------+
+                                                    |
+                                                    | 3) outbound HTTPS
+                                                    v
+                                          +---------+---------+
+                                          | OpenAI API        |
+                                          | Semgrep (cloud)   |
+                                          +-------------------+
 ```
 
 #### Deploy with scripts (recommended)
