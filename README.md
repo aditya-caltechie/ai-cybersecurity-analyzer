@@ -108,11 +108,6 @@ For now, this repo’s **primary** supported cloud deployment is **AWS App Runne
 - **AWS deploy guide:** [`docs/aws.md`](docs/aws.md)
 - **Terraform summary:** [`terraform/README.md`](terraform/README.md)
 
-Azure and GCP are included as optional later paths:
-- Azure workshop guide: [`docs/workshop/week3/day1.part2.md`](docs/workshop/week3/day1.part2.md)
-- GCP workshop guide: [`docs/workshop/week3/day2.part2.md`](docs/workshop/week3/day2.part2.md)
-- Azure resource list: [`docs/azure.md`](docs/azure.md)
-
 ### AWS deployment (recommended)
 
 #### High-level AWS architecture (ASCII)
@@ -242,3 +237,14 @@ Confirm with `yes` when prompted. You can keep an empty resource group in Azure 
 ### GCP
 
 Use `terraform/gcp` with your GCP credentials and variables; see [`docs/workshop/week3/day2.part2.md`](docs/workshop/week3/day2.part2.md).
+
+---
+
+#### Reference:
+
+Azure and GCP are included as optional later paths:
+- Azure workshop guide: [`docs/workshop/week3/day1.part2.md`](docs/workshop/week3/day1.part2.md)
+- GCP workshop guide: [`docs/workshop/week3/day2.part2.md`](docs/workshop/week3/day2.part2.md)
+- Azure resource list: [`docs/azure.md`](docs/azure.md)
+
+---
